@@ -1,50 +1,65 @@
-nome: Teste de Conexões
+name: Teste de Conexões - MongoDB, Redis e Storj
 
-em:
-despacho_de_fluxo_de_trabalho:
+on:
+  workflow_dispatch:
 
 jobs:
-testar:
-runs-on: ubuntu-latest
-steps:
-- name: Instalar bibliotecas
-run: pip install pymongo redis boto3
+  testar:
+    runs-on: ubuntu-latest
 
-  - name: Testar MongoDB
-    env:
-      MONGO_URI: ${{ secrets.MONGODB_URI }}
-    run: |
-      python -c "
-      import pymongo, os
-      client = pymongo.MongoClient(os.environ['MONGO_URI'], serverSelectionTimeoutMS=10000)
-      print(client.server_info())
-      print('MongoDB OK')
-      "
+    steps:
+      - name: Instalar bibliotecas
+        run: |
+          pip install pymongo redis boto3
 
-  - name: Testar Redis
-    env:
-      REDIS_URL: ${{ secrets.REDIS_URL }}
-    run: |
-      python -c "
-      import redis, os
-      r = redis.from_url(os.environ['REDIS_URL'])
-      print(r.ping())
-      print('Redis OK')
-      "
+      - name: Testar MongoDB
+        env:
+          MONGO_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          python -c "
+          import os
+          from pymongo import MongoClient
 
-  - name: Testar Storj
-    env:
-      STORJ_ACCESS_KEY: ${{ secrets.STORJ_ACCESS_KEY }}
-      STORJ_SECRET_KEY: ${{ secrets.STORJ_SECRET_KEY }}
-      STORJ_ENDPOINT: ${{ secrets.STORJ_ENDPOINT }}
-    run: |
-      python -c "
-      import boto3, os
-      s3 = boto3.client('s3',
-        endpoint_url=os.environ['STORJ_ENDPOINT'],
-        aws_access_key_id=os.environ['STORJ_ACCESS_KEY'],
-        aws_secret_access_key=os.environ['STORJ_SECRET_KEY'])
-      buckets = s3.list_buckets()
-      print([b['Name'] for b in buckets['Buckets']])
-      print('Storj OK')
-      "
+          client = MongoClient(
+              os.environ['MONGO_URI'],
+              serverSelectionTimeoutMS=10000
+          )
+
+          client.admin.command('ping')
+          print('MongoDB OK')
+          "
+
+      - name: Testar Redis
+        env:
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+        run: |
+          python -c "
+          import os
+          import redis
+
+          r = redis.from_url(os.environ['REDIS_URL'])
+          print(r.ping())
+          print('Redis OK')
+          "
+
+      - name: Testar Storj
+        env:
+          STORJ_ACCESS_KEY: ${{ secrets.STORJ_ACCESS_KEY }}
+          STORJ_SECRET_KEY: ${{ secrets.STORJ_SECRET_KEY }}
+          STORJ_ENDPOINT: ${{ secrets.STORJ_ENDPOINT }}
+        run: |
+          python -c "
+          import os
+          import boto3
+
+          s3 = boto3.client(
+              's3',
+              endpoint_url=os.environ['STORJ_ENDPOINT'],
+              aws_access_key_id=os.environ['STORJ_ACCESS_KEY'],
+              aws_secret_access_key=os.environ['STORJ_SECRET_KEY']
+          )
+
+          response = s3.list_buckets()
+          print('Storj OK')
+          print('Buckets:', [b['Name'] for b in response.get('Buckets', [])])
+          "
