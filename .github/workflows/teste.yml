@@ -38,8 +38,14 @@ jobs:
           import os
           import redis
 
-          r = redis.from_url(os.environ["REDIS_URL"])
-          print("Redis ping:", r.ping())
+          r = redis.from_url(
+              os.environ["REDIS_URL"],
+              protocol=2,
+              socket_connect_timeout=10,
+              socket_timeout=10
+          )
+
+          r.ping()
           print("Redis OK")
           PY
 
