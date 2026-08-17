@@ -53,7 +53,6 @@ jobs:
           STORJ_ACCESS_KEY: ${{ secrets.STORJ_ACCESS_KEY }}
           STORJ_SECRET_KEY: ${{ secrets.STORJ_SECRET_KEY }}
           STORJ_ENDPOINT: ${{ secrets.STORJ_ENDPOINT }}
-          STORJ_BUCKET: ${{ secrets.STORJ_BUCKET }}
         run: |
           python - <<'PY'
           import os
@@ -68,10 +67,11 @@ jobs:
               config=Config(signature_version="s3v4")
           )
 
-          bucket = os.environ["STORJ_BUCKET"]
-
-          s3.head_bucket(Bucket=bucket)
+          response = s3.list_buckets()
 
           print("Storj OK")
-          print("Bucket:", bucket)
+          print("Buckets encontrados:")
+
+          for bucket in response.get("Buckets", []):
+              print("-", bucket["Name"])
           PY
