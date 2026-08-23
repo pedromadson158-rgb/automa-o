@@ -1,0 +1,58 @@
+# Segredos e configurações locais
+.env
+.env.*
+!.env.example
+auth.json
+**/auth.json
+**/*secret*
+**/*token*
+**/*credential*
+
+# Ambientes locais
+venv/
+.venv/
+**/venv/
+**/.venv/
+node_modules/
+**/node_modules/
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Estado local do Hermes
+.hermes-runtime/
+**/.hermes-runtime/
+state.db
+state.db-*
+projects.db
+kanban.db
+*.db-shm
+*.db-wal
+sessions/
+logs/
+*.log
+
+# Estado dos nossos routers
+.router_state/
+.gateway_state/
+**/.router_state/
+**/.gateway_state/
+
+# Caches
+.cache/
+**/.cache/
+*.cache
+
+# Builds
+dist/
+build/
+coverage/
+htmlcov/
+
+# Arquivos temporários
+*.tmp
+*.swp
+*~
