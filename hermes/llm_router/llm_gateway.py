@@ -157,15 +157,14 @@ PROVIDERS: Dict[str, ProviderConfig] = {
             os.getenv("OPENROUTER_KEY_3"),
         ],
         models=[
-            "openai/gpt-oss-120b:free",
-            "openai/gpt-oss-20b:free",
-            "qwen/qwen3-coder:free",
-            "qwen/qwen3-next-80b-a3b-instruct:free",
-            "nousresearch/hermes-3-llama-3.1-405b:free",
             "nvidia/nemotron-3-super-120b-a12b:free",
             "nvidia/nemotron-3-ultra-550b-a55b:free",
-            "meta-llama/llama-3.3-70b-instruct:free",
-        ],
+            "google/gemma-4-31b-it:free",
+            "google/gemma-4-26b-a4b-it:free",
+            "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+            "nvidia/nemotron-3.5-lightning:free",
+            "liquid/lfm-2.5-2.6b:free",
+],
     ),
 
     "gemini": ProviderConfig(
