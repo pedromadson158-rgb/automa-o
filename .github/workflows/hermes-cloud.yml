@@ -1,0 +1,73 @@
+name: Hermes Cloud - Validação
+
+on:
+  workflow_dispatch:
+
+jobs:
+  validar-ambiente:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar Redis Server
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          sudo systemctl start redis-server
+          redis-cli ping
+
+      - name: Instalar dependências do Router/Gateway
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r hermes/llm_router/requirements-router.txt
+
+      - name: Iniciar Router em background
+        env:
+          GROQ_KEY_1: ${{ secrets.GROQ_KEY_1 }}
+          GROQ_KEY_2: ${{ secrets.GROQ_KEY_2 }}
+          GROQ_KEY_3: ${{ secrets.GROQ_KEY_3 }}
+          OPENROUTER_KEY_1: ${{ secrets.OPENROUTER_KEY_1 }}
+          OPENROUTER_KEY_2: ${{ secrets.OPENROUTER_KEY_2 }}
+          OPENROUTER_KEY_3: ${{ secrets.OPENROUTER_KEY_3 }}
+          GEMINI_KEY_1: ${{ secrets.GEMINI_KEY_1 }}
+          GEMINI_KEY_2: ${{ secrets.GEMINI_KEY_2 }}
+        run: |
+          cd hermes/llm_router
+          nohup uvicorn router:app --host 127.0.0.1 --port 8001 > router.log 2>&1 &
+          sleep 5
+
+      - name: Iniciar Gateway em background
+        env:
+          GROQ_KEY_1: ${{ secrets.GROQ_KEY_1 }}
+          GROQ_KEY_2: ${{ secrets.GROQ_KEY_2 }}
+          GROQ_KEY_3: ${{ secrets.GROQ_KEY_3 }}
+          OPENROUTER_KEY_1: ${{ secrets.OPENROUTER_KEY_1 }}
+          OPENROUTER_KEY_2: ${{ secrets.OPENROUTER_KEY_2 }}
+          OPENROUTER_KEY_3: ${{ secrets.OPENROUTER_KEY_3 }}
+          GEMINI_KEY_1: ${{ secrets.GEMINI_KEY_1 }}
+          GEMINI_KEY_2: ${{ secrets.GEMINI_KEY_2 }}
+        run: |
+          cd hermes/llm_router
+          nohup uvicorn llm_gateway:app --host 127.0.0.1 --port 8000 > gateway.log 2>&1 &
+          sleep 5
+
+      - name: Testar Gateway (E2E)
+        run: |
+          echo "Testando health..."
+          curl -s http://127.0.0.1:8000/health
+          echo ""
+          echo "Testando chat..."
+          curl -s http://127.0.0.1:8000/v1/chat/completions \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "messages": [{"role": "user", "content": "Responda apenas: CLOUD OK"}],
+              "temperature": 0,
+              "max_tokens": 64
+            }'
