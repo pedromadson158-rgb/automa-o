@@ -114,6 +114,7 @@ tm.tasks.update_one(
 rec = tm.recover_expired_tasks()
 assert any(r["task_id"] == tl["task_id"] for r in rec)
 assert tm.get_task(tl["task_id"])["status"] == RETRY_WAIT
+tm.cancel_task(tl["task_id"])  # limpa a sobra antes do teste 9
 print("8 RECUPERACAO OK")
 
 # 9. DEAD LETTER (falhar ate max_attempts)
