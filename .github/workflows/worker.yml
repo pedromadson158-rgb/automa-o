@@ -1,0 +1,34 @@
+name: Worker Executor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'  # A cada 15 minutos (futuramente controlado pelo Cloudflare Worker)
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r infra/requirements-infra.txt
+
+      - name: Run worker
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DATABASE: automacao
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          WORKER_MAX_TASKS: 10
+        run: |
+          cd infra
+          python worker.py
