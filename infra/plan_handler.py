@@ -23,14 +23,61 @@ FORMATOS = [
 
 
 def _parse_json(raw):
+    """Parser tolerante: strip reasoning tags, reparos, fecha chaves."""
+    import ast
     text = raw.strip()
+    # remove blocos <think>...</think> (Qwen e modelos reasoning)
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
+    # se sobrou <think> sem fechamento e nao ha JSON depois, descarta o reasoning
+    if "<think>" in text and "{" not in text.split("<think>", 1)[1]:
+        text = text.split("<think>", 1)[0].strip()
     if text.startswith("```"):
         text = re.sub(r"^```(?:json)?\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
+    # procura bloco JSON (com ou sem truncamento)
+    m = re.search(r"\{.*", text, re.S)
+    block = m.group(0) if m else text
+    # remove virgulas finais
+    block = re.sub(r",\s*([}\]])", r"\1", block)
+    # aspas em chaves sem aspas
+    block = re.sub(r"([{,]\s*)([A-Za-z_][A-Za-z0-9_\-\s]*?)\s*:",
+                   r'\1"\2":', block)
+    # tenta parsear; se truncado, fecha chaves/colchetes
+    for candidate in (block,):
+        try:
+            return json.loads(candidate)
+        except Exception:
+            pass
+        # balanceamento: conta { [ vs } ]
+        opens = candidate.count("{") + candidate.count("[")
+        closes = candidate.count("}") + candidate.count("]")
+        trail = candidate.rstrip()
+        # fecha string aberta?
+        if trail.count('"') % 2 == 1:
+            trail += '"'
+        # remove ultima virgula solta
+        trail = re.sub(r",\s*$", "", trail)
+        # adiciona chaves faltantes
+        extra = []
+        diff_b = candidate.count("{") - candidate.count("}")
+        diff_a = candidate.count("[") - candidate.count("]")
+        extra.append("}" * max(diff_b, 0))
+        extra.append("]" * max(diff_a, 0))
+        fixed = trail + "".join(extra)
+        try:
+            return json.loads(fixed)
+        except Exception:
+            pass
+    # fallback: literal_eval
     try:
-        return json.loads(text)
+        val = ast.literal_eval(block)
+        if isinstance(val, dict):
+            return val
     except Exception:
-        return json.loads(re.sub(r",\s*([}\]])", r"\1", text))
+        pass
+    raise ValueError("hipotese sem JSON valido: " + text[:300])
+
+
 
 
 def handle(task):
@@ -63,9 +110,9 @@ def handle(task):
     )
     raw = complete(
         prompt,
-        system="Retorne APENAS JSON valido. Sem markdown.",
-        max_tokens=400,
-        temperature=0.7,
+        system="Retorne APENAS JSON valido. Sem markdown. NAO gere blocos de pensamento. NAO use tags <think>. Seja direto.",
+        max_tokens=2000,
+        temperature=0.3,
     )
     hyp = _parse_json(raw)
 
