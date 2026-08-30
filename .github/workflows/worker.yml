@@ -3,12 +3,12 @@ name: Worker Executor
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/15 * * * *'  # A cada 15 minutos (futuramente controlado pelo Cloudflare Worker)
+    - cron: '*/15 * * * *'
 
 jobs:
   worker:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,13 +21,20 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r infra/requirements-infra.txt
+          pip install -r hermes/llm_router/requirements-router.txt
 
       - name: Run worker
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DATABASE: automacao
-          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
-          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          GROQ_KEY_1: ${{ secrets.GROQ_KEY_1 }}
+          GROQ_KEY_2: ${{ secrets.GROQ_KEY_2 }}
+          GROQ_KEY_3: ${{ secrets.GROQ_KEY_3 }}
+          OPENROUTER_KEY_1: ${{ secrets.OPENROUTER_KEY_1 }}
+          OPENROUTER_KEY_2: ${{ secrets.OPENROUTER_KEY_2 }}
+          OPENROUTER_KEY_3: ${{ secrets.OPENROUTER_KEY_3 }}
+          GEMINI_KEY_1: ${{ secrets.GEMINI_KEY_1 }}
+          GEMINI_KEY_2: ${{ secrets.GEMINI_KEY_2 }}
           WORKER_MAX_TASKS: 10
         run: |
           cd infra
