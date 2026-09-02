@@ -21,6 +21,7 @@ import qa_handler
 import decision_handler
 import render_handler
 import publish_handler
+import metrics_handler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("worker")
@@ -44,6 +45,7 @@ HANDLERS = {
     "DECISION_CONTENT": decision_handler.handle,
     "RENDER_CONTENT": render_handler.handle,
     "PUBLISH_CONTENT": publish_handler.handle,
+    "METRICS_CONTENT": metrics_handler.handle,
 }
 
 
