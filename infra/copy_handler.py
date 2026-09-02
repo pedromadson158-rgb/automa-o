@@ -20,22 +20,28 @@ import hermes_v8
 logger = logging.getLogger("copy_handler")
 
 
+def _limpar_reasoning(raw):
+    """Remove blocos <think>...</think> (fechados ou truncados) de modelos reasoning."""
+    import re as _re
+    text = _re.sub(r"<think>.*?</think>", "", raw, flags=_re.S)
+    text = _re.sub(r"<think>.*$", "", text, flags=_re.S)
+    return text.strip()
+
+
 def _completar_via_router(self, prompt, system="", max_tokens=1200, **kw):
     """Adapter ADR-017: todo LLM do v8 passa pelo IA Router."""
     import time
-    # 1) max_tokens minimo 800 (fases do v8 precisam de output generoso)
-    # 2) salt unico por chamada para desabilitar cache do Router
-    #    (o v8 ja tem seu proprio cache de fases - cache duplo confunde retry)
     salt = f"\n<!-- r:{int(time.time()*1000000)} -->"
-    return router_complete(
+    raw = router_complete(
         str(prompt) + salt,
         system=str(system or ""),
         max_tokens=max(800, int(max_tokens or 1200)),
         temperature=0.7,
     )
+    return _limpar_reasoning(raw)
 
 
-hermes_v8.LLMClient.completar = _completar_via_router
+
 
 from hermes_v8 import gerar_campanha  # noqa: E402
 
