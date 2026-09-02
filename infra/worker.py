@@ -15,6 +15,8 @@ from mongo_connection import get_client
 from task_manager import TaskManager
 from queue_manager import TaskQueue
 import plan_handler
+import copy_handler
+import image_handler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("worker")
@@ -32,6 +34,8 @@ def handle_echo(task):
 HANDLERS = {
     "ECHO": handle_echo,
     "PLAN_CONTENT": plan_handler.handle,
+    "COPY_CONTENT": copy_handler.handle,
+    "IMAGE_CONTENT": image_handler.handle,
 }
 
 
