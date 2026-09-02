@@ -22,6 +22,11 @@ jobs:
         run: |
           pip install -r infra/requirements-infra.txt
           pip install -r hermes/llm_router/requirements-router.txt
+          pip install playwright
+
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install chromium --with-deps
 
       - name: Run worker
         env:
