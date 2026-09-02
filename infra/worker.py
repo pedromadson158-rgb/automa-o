@@ -18,6 +18,7 @@ import plan_handler
 import copy_handler
 import image_handler
 import qa_handler
+import decision_handler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("worker")
@@ -38,6 +39,7 @@ HANDLERS = {
     "COPY_CONTENT": copy_handler.handle,
     "IMAGE_CONTENT": image_handler.handle,
     "QA_CONTENT": qa_handler.handle,
+    "DECISION_CONTENT": decision_handler.handle,
 }
 
 
