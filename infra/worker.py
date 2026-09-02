@@ -20,6 +20,7 @@ import image_handler
 import qa_handler
 import decision_handler
 import render_handler
+import publish_handler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("worker")
@@ -42,6 +43,7 @@ HANDLERS = {
     "QA_CONTENT": qa_handler.handle,
     "DECISION_CONTENT": decision_handler.handle,
     "RENDER_CONTENT": render_handler.handle,
+    "PUBLISH_CONTENT": publish_handler.handle,
 }
 
 
