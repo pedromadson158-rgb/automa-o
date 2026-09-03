@@ -94,11 +94,23 @@ def handle(task):
     if not texto:
         raise ValueError("nenhum criativo POST gerado")
 
+    # Re-pontua direto (pipeline retorna score 0 via Router — bug de propagacao)
+    score_real = 0.0
+    try:
+        _scores = hermes_v8.pontuar_copy(texto, None)
+        score_real = float(_scores.get("score_final", 0))
+        logger.info("copy_rescored content_id=%s pipeline=%s real=%s",
+                     content_id, post.get("score", 0), score_real)
+    except Exception as _e:
+        logger.warning("rescore_failed content_id=%s err=%s", content_id, _e)
+        score_real = post.get("score", 0)
+
     copy_data = {
         "headline": resultado.get("headline") or post.get("headline", ""),
         "body": texto,
         "cta": post.get("cta", "link na bio"),
-        "score": post.get("score", (resultado.get("metricas") or {}).get("score_medio", 0)),
+        "score": score_real,
+        "score_pipeline": post.get("score", 0),
         "angulo": post.get("angulo", ""),
         "formato": "POST",
         "modo": modo,
