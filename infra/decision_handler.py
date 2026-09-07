@@ -22,6 +22,12 @@ def handle(task):
         raise ValueError(f"content_id {content_id} nao encontrado")
     
     qa_data = ((content.get("steps") or {}).get("QA") or {}).get("data") or {}
+    
+    # Verificação de pré-requisito: QA deve ter dados válidos
+    if not qa_data or "copy_score" not in qa_data or "image_score" not in qa_data:
+        raise ValueError(f"QA step não tem dados válidos para content_id {content_id}. "
+                        f"Aguardando QA completar antes de executar DECISION.")
+    
     decisao_preliminar = qa_data.get("decisao_preliminar", "DESCARTAR")
     
     # Override manual tem prioridade
