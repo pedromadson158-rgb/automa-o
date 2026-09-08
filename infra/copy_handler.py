@@ -43,6 +43,8 @@ def _completar_via_router(self, prompt, system="", max_tokens=1200, **kw):
 
 
 
+import hermes_v8
+hermes_v8.LLMClient.completar = _completar_via_router  # ADR-017: força uso do IA Router
 from hermes_v8 import gerar_campanha  # noqa: E402
 
 
